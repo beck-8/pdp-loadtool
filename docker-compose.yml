@@ -1,0 +1,60 @@
+services:
+  foc-chaintest:
+    build: .
+    env_file:
+      - .env
+    environment:
+      - PRIVATE_KEY=${PRIVATE_KEY:-}
+      - NETWORK=${NETWORK:-calibration}
+      - UPLOAD_INTERVAL_SECONDS=${UPLOAD_INTERVAL_SECONDS:-10}
+      - OPERATIONS_PER_ROTATION=${OPERATIONS_PER_ROTATION:-10}
+      - DATA_SIZE_BYTES=${DATA_SIZE_BYTES:-1024}
+      - WITH_CDN=${WITH_CDN:-false}
+      - MAX_UPLOADS=${MAX_UPLOADS:-0}
+
+  # Development service with live reload
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env
+    volumes:
+      - ./src:/app/src:ro
+    command: npx tsx watch src/index.ts
+
+  # Setup - deposit and approve operator (run first!)
+  setup:
+    build: .
+    env_file:
+      - .env
+    command: ["node", "dist/index.js", "setup"]
+
+  # Check balance
+  balance:
+    build: .
+    env_file:
+      - .env
+    command: ["node", "dist/index.js", "balance"]
+
+  # Single upload test
+  single:
+    build: .
+    env_file:
+      - .env
+    command: ["node", "dist/index.js", "single"]
+
+  # Show config
+  info:
+    build: .
+    env_file:
+      - .env
+    command: ["node", "dist/index.js", "info"]
+
+  # Parallel upload test (for debugging provider behavior)
+  # -p contexts, -u parallel uploads per round, -r rounds, -i interval between rounds, -d delay between context starts
+  parallel:
+    build: .
+    env_file:
+      - .env
+    command: ["node", "dist/index.js", "parallel", "-p", "10", "-u", "3", "-R", "3", "-i", "15", "-d", "2000"]

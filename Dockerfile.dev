@@ -1,0 +1,15 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json ./
+
+# Install all dependencies including dev
+RUN npm install
+
+# Copy config files
+COPY tsconfig.json ./
+
+# Source will be mounted as volume
+# CMD specified in docker-compose
