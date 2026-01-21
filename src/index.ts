@@ -112,11 +112,12 @@ program
   .option('-k, --private-key <key>', 'Wallet private key')
   .option('-n, --network <network>', 'Network: calibration or mainnet')
   .option('-a, --amount <usdfc>', 'Amount of USDFC to deposit', '2.5')
-  .action(async (options) => {
+  .action(async (options, command) => {
     try {
+      const networkOpt = options.network ?? command.parent?.opts().network;
       const config = loadConfig({
         privateKey: options.privateKey,
-        network: options.network as 'calibration' | 'mainnet',
+        network: networkOpt as 'calibration' | 'mainnet',
       });
 
       log('Setting up FOC account...');
@@ -185,20 +186,24 @@ program
   .option('-c, --cdn', 'Enable CDN')
   .option('--retries <count>', 'Max retries per operation')
   .option('--retry-delay <ms>', 'Initial retry delay in ms')
-  .action(async (options) => {
+  .action(async (options, command) => {
     try {
+      // Helper to get option from subcommand or global args
+      const getOpt = (key: string) => options[key] ?? command.parent?.opts()[key];
       const parseIntOpt = (val: string | undefined) => val ? parseInt(val, 10) : undefined;
+
+      const networkOpt = options.network ?? command.parent?.opts().network;
 
       const config = loadConfig({
         privateKey: options.privateKey,
-        network: options.network as 'calibration' | 'mainnet',
+        network: networkOpt as 'calibration' | 'mainnet',
         uploadIntervalSeconds: 0,
         operationsPerRotation: 0,
-        dataSizeBytes: parseIntOpt(options.size),
-        withCDN: options.cdn,
+        dataSizeBytes: parseIntOpt(getOpt('size')),
+        withCDN: getOpt('cdn'),
         maxUploads: 1,
-        maxRetries: parseIntOpt(options.retries),
-        retryDelayMs: parseIntOpt(options.retryDelay),
+        maxRetries: parseIntOpt(getOpt('retries')),
+        retryDelayMs: parseIntOpt(getOpt('retryDelay')),
       });
 
       log('Performing single upload...');
@@ -257,11 +262,12 @@ program
   .description('Check account balance and approvals')
   .option('-k, --private-key <key>', 'Wallet private key')
   .option('-n, --network <network>', 'Network: calibration or mainnet')
-  .action(async (options) => {
+  .action(async (options, command) => {
     try {
+      const networkOpt = options.network ?? command.parent?.opts().network;
       const config = loadConfig({
         privateKey: options.privateKey,
-        network: options.network as 'calibration' | 'mainnet',
+        network: networkOpt as 'calibration' | 'mainnet',
       });
 
       const rpcUrl = config.network === 'mainnet'
