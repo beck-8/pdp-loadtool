@@ -174,24 +174,19 @@ export class ParallelChaintest {
         // ignore
       }
 
-      log(`[CTX-${contextId}] Starting ${this.config.uploadsPerContext} rounds of ${this.config.parallelUploads} parallel uploads (${this.config.uploadIntervalSeconds}s between round starts)...`);
+      log(`[CTX-${contextId}] Starting ${this.config.uploadsPerContext} rounds of ${this.config.parallelUploads} parallel uploads (${this.config.uploadIntervalSeconds}s between rounds)...`);
 
-      // Run M rounds - start each round after X seconds, don't wait for previous to complete
-      const roundPromises: Promise<RoundResult>[] = [];
+      // Run M rounds sequentially - wait for each round to complete before starting the next
       for (let round = 0; round < this.config.uploadsPerContext; round++) {
-        // Start round immediately (first) or after delay
+        // Wait between rounds (not before the first round)
         if (round > 0 && this.config.uploadIntervalSeconds > 0) {
           await sleep(this.config.uploadIntervalSeconds * 1000);
         }
 
-        log(`[CTX-${contextId}] Launching round ${round + 1}...`);
-        const roundPromise = this.runRound(contextId, round + 1, storageContext);
-        roundPromises.push(roundPromise);
+        log(`[CTX-${contextId}] Starting round ${round + 1}...`);
+        const roundResult = await this.runRound(contextId, round + 1, storageContext);
+        result.rounds.push(roundResult);
       }
-
-      // Wait for all rounds to complete
-      const roundResults = await Promise.all(roundPromises);
-      result.rounds = roundResults;
 
       // Update dataSetId from context (should be set after first upload)
       result.datasetId = storageContext.dataSetId ?? result.datasetId;
@@ -451,6 +446,6 @@ export class ParallelChaintest {
     console.log(`  Total contexts: ${this.results.length}`);
     console.log(`  Total uploads: ${successfulUploads}/${totalUploads} (${totalUploads > 0 ? ((successfulUploads / totalUploads) * 100).toFixed(1) : 0}% success)`);
     console.log(`  Unique providers: ${providerStats.size}`);
-    console.log('=' .repeat(80) + '\n');
+    console.log('='.repeat(80) + '\n');
   }
 }
