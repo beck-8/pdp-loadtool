@@ -318,16 +318,16 @@ program
   .description('Run parallel uploads with multiple contexts (for debugging provider behavior)')
   .option('-k, --private-key <key>', 'Wallet private key')
   .option('-n, --network <network>', 'Network: calibration or mainnet')
-  .option('-p, --contexts <count>', 'Number of parallel contexts to spawn', '10')
-  .option('-u, --uploads <count>', 'Number of parallel uploads per round', '3')
-  .option('-R, --rounds <count>', 'Number of rounds per context', '1')
-  .option('-d, --delay <ms>', 'Delay between starting each context (ms)', '2000')
+  .option('-p, --contexts <count>', 'Number of parallel contexts to spawn')
+  .option('-u, --uploads <count>', 'Number of parallel uploads per round')
+  .option('-R, --rounds <count>', 'Number of rounds per context')
+  .option('-d, --delay <ms>', 'Delay between starting each context (ms)')
   .option('-s, --size <bytes>', 'Data size in bytes')
   .option('-c, --cdn', 'Enable CDN')
   .option('--retries <count>', 'Max retries per upload')
   .option('--retry-delay <ms>', 'Initial retry delay in ms')
-  .option('-i, --interval <seconds>', 'Seconds between starting each round (rounds overlap)', '15')
-  .option('-x, --exclude <ids>', 'Comma-separated list of provider IDs to exclude', '')
+  .option('-i, --interval <seconds>', 'Seconds between starting each round (rounds overlap)')
+  .option('-x, --exclude <ids>', 'Comma-separated list of provider IDs to exclude')
   .option('--provider <id>', 'Specific provider ID to use')
   .action(async (options, command) => {
     try {
@@ -355,7 +355,7 @@ program
         withCDN: getOpt('cdn'),
         maxRetries: parseIntOpt(getOpt('retries')),
         retryDelayMs: parseIntOpt(getOpt('retryDelay')),
-        uploadIntervalSeconds: parseIntOpt(options.interval), // parallel specific interval (-i) overrides global
+        uploadIntervalSeconds: parseIntOpt(getOpt('interval')), // parallel specific interval (-i) overrides global
         excludeProviderIds,
         providerId,
       });
