@@ -24,27 +24,29 @@ program
   .description('Filecoin Onchain Cloud chaintest - uploads data periodically with configurable rotation')
   .version('1.0.0')
   .option('-k, --private-key <key>', 'Wallet private key (or set PRIVATE_KEY env var)')
-  .option('-n, --network <network>', 'Network: calibration or mainnet', 'calibration')
-  .option('-i, --interval <seconds>', 'Upload interval in seconds', '10')
-  .option('-r, --rotation <count>', 'Operations before dataset/payment rail rotation (0=disabled)', '10')
-  .option('-s, --size <bytes>', 'Data size in bytes (min 127)', '1024')
-  .option('-c, --cdn', 'Enable CDN for faster retrieval', false)
-  .option('-m, --max <count>', 'Maximum number of uploads (0=unlimited)', '0')
-  .option('--retries <count>', 'Max retries per operation', '3')
-  .option('--retry-delay <ms>', 'Initial retry delay in ms (doubles each retry)', '5000')
+  .option('-n, --network <network>', 'Network: calibration or mainnet')
+  .option('-i, --interval <seconds>', 'Upload interval in seconds')
+  .option('-r, --rotation <count>', 'Operations before dataset/payment rail rotation (0=disabled)')
+  .option('-s, --size <bytes>', 'Data size in bytes (min 127)')
+  .option('-c, --cdn', 'Enable CDN for faster retrieval')
+  .option('-m, --max <count>', 'Maximum number of uploads (0=unlimited)')
+  .option('--retries <count>', 'Max retries per operation')
+  .option('--retry-delay <ms>', 'Initial retry delay in ms (doubles each retry)')
   .option('--verbose', 'Enable verbose logging', false)
   .action(async (options) => {
     try {
+      const parseIntOpt = (val: string | undefined) => val ? parseInt(val, 10) : undefined;
+
       const config = loadConfig({
         privateKey: options.privateKey,
         network: options.network as 'calibration' | 'mainnet',
-        uploadIntervalSeconds: parseInt(options.interval, 10),
-        operationsPerRotation: parseInt(options.rotation, 10),
-        dataSizeBytes: parseInt(options.size, 10),
+        uploadIntervalSeconds: parseIntOpt(options.interval),
+        operationsPerRotation: parseIntOpt(options.rotation),
+        dataSizeBytes: parseIntOpt(options.size),
         withCDN: options.cdn,
-        maxUploads: parseInt(options.max, 10),
-        maxRetries: parseInt(options.retries, 10),
-        retryDelayMs: parseInt(options.retryDelay, 10),
+        maxUploads: parseIntOpt(options.max),
+        maxRetries: parseIntOpt(options.retries),
+        retryDelayMs: parseIntOpt(options.retryDelay),
       });
 
       console.log(`
@@ -108,7 +110,7 @@ program
   .command('setup')
   .description('Deposit USDFC (required before first upload)')
   .option('-k, --private-key <key>', 'Wallet private key')
-  .option('-n, --network <network>', 'Network: calibration or mainnet', 'calibration')
+  .option('-n, --network <network>', 'Network: calibration or mainnet')
   .option('-a, --amount <usdfc>', 'Amount of USDFC to deposit', '2.5')
   .action(async (options) => {
     try {
@@ -178,23 +180,25 @@ program
   .command('single')
   .description('Perform a single upload')
   .option('-k, --private-key <key>', 'Wallet private key')
-  .option('-n, --network <network>', 'Network: calibration or mainnet', 'calibration')
-  .option('-s, --size <bytes>', 'Data size in bytes', '1024')
-  .option('-c, --cdn', 'Enable CDN', false)
-  .option('--retries <count>', 'Max retries per operation', '3')
-  .option('--retry-delay <ms>', 'Initial retry delay in ms', '5000')
+  .option('-n, --network <network>', 'Network: calibration or mainnet')
+  .option('-s, --size <bytes>', 'Data size in bytes')
+  .option('-c, --cdn', 'Enable CDN')
+  .option('--retries <count>', 'Max retries per operation')
+  .option('--retry-delay <ms>', 'Initial retry delay in ms')
   .action(async (options) => {
     try {
+      const parseIntOpt = (val: string | undefined) => val ? parseInt(val, 10) : undefined;
+
       const config = loadConfig({
         privateKey: options.privateKey,
         network: options.network as 'calibration' | 'mainnet',
         uploadIntervalSeconds: 0,
         operationsPerRotation: 0,
-        dataSizeBytes: parseInt(options.size, 10),
+        dataSizeBytes: parseIntOpt(options.size),
         withCDN: options.cdn,
         maxUploads: 1,
-        maxRetries: parseInt(options.retries, 10),
-        retryDelayMs: parseInt(options.retryDelay, 10),
+        maxRetries: parseIntOpt(options.retries),
+        retryDelayMs: parseIntOpt(options.retryDelay),
       });
 
       log('Performing single upload...');
@@ -252,7 +256,7 @@ program
   .command('balance')
   .description('Check account balance and approvals')
   .option('-k, --private-key <key>', 'Wallet private key')
-  .option('-n, --network <network>', 'Network: calibration or mainnet', 'calibration')
+  .option('-n, --network <network>', 'Network: calibration or mainnet')
   .action(async (options) => {
     try {
       const config = loadConfig({
@@ -313,38 +317,45 @@ program
   .command('parallel')
   .description('Run parallel uploads with multiple contexts (for debugging provider behavior)')
   .option('-k, --private-key <key>', 'Wallet private key')
-  .option('-n, --network <network>', 'Network: calibration or mainnet', 'calibration')
+  .option('-n, --network <network>', 'Network: calibration or mainnet')
   .option('-p, --contexts <count>', 'Number of parallel contexts to spawn', '10')
   .option('-u, --uploads <count>', 'Number of parallel uploads per round', '3')
   .option('-R, --rounds <count>', 'Number of rounds per context', '1')
   .option('-d, --delay <ms>', 'Delay between starting each context (ms)', '2000')
-  .option('-s, --size <bytes>', 'Data size in bytes', '1024')
-  .option('-c, --cdn', 'Enable CDN', false)
-  .option('--retries <count>', 'Max retries per upload', '3')
-  .option('--retry-delay <ms>', 'Initial retry delay in ms', '5000')
+  .option('-s, --size <bytes>', 'Data size in bytes')
+  .option('-c, --cdn', 'Enable CDN')
+  .option('--retries <count>', 'Max retries per upload')
+  .option('--retry-delay <ms>', 'Initial retry delay in ms')
   .option('-i, --interval <seconds>', 'Seconds between starting each round (rounds overlap)', '15')
   .option('-x, --exclude <ids>', 'Comma-separated list of provider IDs to exclude', '')
   .option('--provider <id>', 'Specific provider ID to use')
-  .action(async (options) => {
+  .action(async (options, command) => {
     try {
+      // Helper to get option from subcommand or global args (without defaults masking fallback)
+      const getOpt = (key: string) => options[key] ?? command.parent?.opts()[key];
+      const parseIntOpt = (val: string | undefined) => val ? parseInt(val, 10) : undefined;
+
       const excludeProviderIds = options.exclude
         ? options.exclude.split(',').map((s: string) => parseInt(s.trim(), 10)).filter((n: number) => !isNaN(n))
         : [];
 
       const providerId = options.provider ? parseInt(options.provider, 10) : undefined;
 
+      // Check global network too using getOpt logic manually since network has CLI default 'calibration' handling in loadConfig
+      const networkOpt = options.network ?? command.parent?.opts().network;
+
       const config = loadConfig({
-        privateKey: options.privateKey,
-        network: options.network as 'calibration' | 'mainnet',
-        parallelContexts: parseInt(options.contexts, 10),
-        parallelUploads: parseInt(options.uploads, 10),
-        uploadsPerContext: parseInt(options.rounds, 10),
-        contextStartDelayMs: parseInt(options.delay, 10),
-        dataSizeBytes: parseInt(options.size, 10),
-        withCDN: options.cdn,
-        maxRetries: parseInt(options.retries, 10),
-        retryDelayMs: parseInt(options.retryDelay, 10),
-        uploadIntervalSeconds: parseInt(options.interval, 10),
+        privateKey: options.privateKey, // Private key doesn't clash usually
+        network: networkOpt as 'calibration' | 'mainnet',
+        parallelContexts: parseIntOpt(options.contexts),
+        parallelUploads: parseIntOpt(options.uploads),
+        uploadsPerContext: parseIntOpt(options.rounds),
+        contextStartDelayMs: parseIntOpt(options.delay),
+        dataSizeBytes: parseIntOpt(getOpt('size')),
+        withCDN: getOpt('cdn'),
+        maxRetries: parseIntOpt(getOpt('retries')),
+        retryDelayMs: parseIntOpt(getOpt('retryDelay')),
+        uploadIntervalSeconds: parseIntOpt(options.interval), // parallel specific interval (-i) overrides global
         excludeProviderIds,
         providerId,
       });
