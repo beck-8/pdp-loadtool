@@ -19,6 +19,7 @@ export interface Config {
   contextStartDelayMs: number;   // Delay between starting each context
   excludeProviderIds: number[];  // Provider IDs to exclude from selection
   providerId?: number;           // Specific provider ID to use (optional)
+  datasetId?: number;            // Existing dataset ID to upload into (optional)
 }
 
 export function loadConfig(overrides: Partial<Config> = {}): Config {
@@ -56,6 +57,7 @@ export function loadConfig(overrides: Partial<Config> = {}): Config {
     contextStartDelayMs: overrides.contextStartDelayMs ?? parseInt(process.env.CONTEXT_START_DELAY_MS ?? '2000', 10),
     excludeProviderIds: overrides.excludeProviderIds ?? parseIntList(process.env.EXCLUDE_PROVIDER_IDS ?? ''),
     providerId: overrides.providerId ?? parseOptionalInt(process.env.PROVIDER_ID),
+    datasetId: overrides.datasetId ?? parseOptionalInt(process.env.DATASET_ID),
   };
 }
 

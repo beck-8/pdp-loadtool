@@ -335,6 +335,7 @@ program
   .option('-i, --interval <seconds>', 'Seconds between starting each round (rounds overlap)')
   .option('-x, --exclude <ids>', 'Comma-separated list of provider IDs to exclude')
   .option('--provider <id>', 'Specific provider ID to use')
+  .option('--dataset <id>', 'Existing dataset ID to upload into (all contexts share this dataset)')
   .action(async (options, command) => {
     try {
       // Helper to get option from subcommand or global args (without defaults masking fallback)
@@ -346,6 +347,7 @@ program
         : [];
 
       const providerId = options.provider ? parseInt(options.provider, 10) : undefined;
+      const datasetId = options.dataset ? parseInt(options.dataset, 10) : undefined;
 
       // Check global network too using getOpt logic manually since network has CLI default 'calibration' handling in loadConfig
       const networkOpt = options.network ?? command.parent?.opts().network;
@@ -364,6 +366,7 @@ program
         uploadIntervalSeconds: parseIntOpt(getOpt('interval')), // parallel specific interval (-i) overrides global
         excludeProviderIds,
         providerId,
+        datasetId,
       });
 
       console.log(`

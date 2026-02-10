@@ -64,6 +64,9 @@ export class ParallelChaintest {
     log(`Context start delay: ${this.config.contextStartDelayMs}ms`);
     log(`Data size: ${formatBytes(this.config.dataSizeBytes)}`);
     log(`Max retries per upload: ${this.config.maxRetries}`);
+    if (this.config.datasetId !== undefined) {
+      log(`Target dataset: ${this.config.datasetId} (all contexts will share this dataset)`);
+    }
     if (this.config.providerId !== undefined) {
       log(`Forcing provider: ${this.config.providerId}`);
     }
@@ -124,11 +127,11 @@ export class ParallelChaintest {
       endTime: 0,
     };
 
-    log(`[CTX-${contextId}] Creating storage context...`);
+    const useExistingDataset = this.config.datasetId !== undefined;
+    log(`[CTX-${contextId}] Creating storage context${useExistingDataset ? ` (using existing dataset ${this.config.datasetId})` : ''}...`);
 
     try {
-      const storageContext = await this.synapse!.storage.createContext({
-        forceCreateDataSet: true,
+      const contextOptions: any = {
         providerId: this.config.providerId,
         excludeProviderIds: this.config.excludeProviderIds.length > 0 ? this.config.excludeProviderIds : undefined,
         callbacks: {
@@ -148,7 +151,15 @@ export class ParallelChaintest {
             log(`[CTX-${contextId}] Dataset: ${info.dataSetId} (existing: ${info.isExisting}), Provider: ${pid}`);
           },
         },
-      });
+      };
+
+      if (useExistingDataset) {
+        contextOptions.dataSetId = this.config.datasetId;
+      } else {
+        contextOptions.forceCreateDataSet = true;
+      }
+
+      const storageContext = await this.synapse!.storage.createContext(contextOptions);
 
       // Get info directly from context
       const ctxDataSetId = storageContext.dataSetId;
